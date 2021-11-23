@@ -11,6 +11,7 @@
 #include "TrailblazerTypes.h"
 #include "set.h"
 #include "grid.h"
+#include "hashmap.h"
 
 /* Function: shortestPath
  * 
@@ -26,11 +27,8 @@
  * search.  Make sure to update both this function prototype and the
  * implementation inside of Trailblazer.cpp.
  */
-Vector<Loc>
-shortestPath(Loc start,
-             Loc end,
-             Grid<double>& world,
-             double costFn(Loc from, Loc to, Grid<double>& world));
+Vector<Loc> shortestPath(Loc start, Loc end, Grid<double>& world, double costFunction(Loc one, Loc two, Grid<double>& world), 
+						 double heuristic(Loc start, Loc end, Grid<double>& world));
 
 /* Function: createMaze
  * 
@@ -43,5 +41,12 @@ shortestPath(Loc start,
  * representation of the maze.
  */
 Set<Edge> createMaze(int numRows, int numCols);
+
+/* This recursive function converts a hash-map into a vector */ 
+void hashMapToVector(HashMap<Loc, Loc>& parents, Vector<Loc>& shortestPath, Loc loc, Loc start);
+
+/* This recursive function finds the origin location that the current
+   location is tied to with the help of the origins' map */ 
+Loc findOrigin(Map<Loc, Loc>& origins, Loc loc);
 
 #endif
