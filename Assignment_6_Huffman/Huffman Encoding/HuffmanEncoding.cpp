@@ -1,6 +1,5 @@
 /**********************************************************
  * File: HuffmanEncoding.cpp
- *
  * Implementation of the functions from HuffmanEncoding.h.
  * Most (if not all) of the code that you write for this
  * assignment will go into this file.
@@ -22,9 +21,17 @@
  * the PSEUDO_EOF character.
  */
 Map<ext_char, int> getFrequencyTable(istream& file) {
-	// TODO: Implement this!
-	
-	return Map<ext_char, int>();	
+	/* Initialise the map. */ 
+	Map<ext_char, int> frequencies;
+	/* Make sure no whitespace character is skipped during file analysis. */ 
+	noskipws(file);
+	char character;
+	/* Map each file character to its amount of occurrences in the file. */ 
+	while(file >> character) frequencies[character]++;
+	/* Add pseudo-end-of-file to the map. */ 
+	frequencies[PSEUDO_EOF] = 1;
+	/* This function returns the map of frequencies. */ 
+	return frequencies;	
 }
 
 /* Function: buildEncodingTree
@@ -39,9 +46,27 @@ Map<ext_char, int> getFrequencyTable(istream& file) {
  * be present.
  */
 Node* buildEncodingTree(Map<ext_char, int>& frequencies) {
-	// TODO: Implement this!
-	
-	return NULL;
+	/* Initialise the priority queue. */ 
+	PriorityQueue<Node*> frequencyPQ;
+	/* Create leaf nodes from frequency map characters and let the
+	   priority queue sort them based on their frequency value. */ 
+	foreach(ext_char character in frequencies){
+		Node* leafNode = new Node();
+		leafNode->character = character;
+		leafNode->weight = frequencies[character];
+		frequencyPQ.enqueue(leafNode, leafNode->weight);
+	}
+	/* Create the binary encoding tree using the Huffman algorithm. */ 
+	while(frequencyPQ.size() != 1){
+		Node* interiorNode = new Node();
+		interiorNode->character = NOT_A_CHAR;
+		interiorNode->zero = frequencyPQ.dequeue();
+		interiorNode->one = frequencyPQ.dequeue();
+		interiorNode->weight = interiorNode->zero->weight + interiorNode->one->weight; 
+		frequencyPQ.enqueue(interiorNode, interiorNode->weight);
+	}
+	/* This function returns the root (top) node of the encoding tree. */ 
+	return frequencyPQ.peek();
 }
 
 /* Function: freeTree
@@ -51,7 +76,36 @@ Node* buildEncodingTree(Map<ext_char, int>& frequencies) {
  * tree.
  */
 void freeTree(Node* root) {
-	// TODO: Implement this!
+	/* Delete the encoding tree by deleting its every node. */ 
+	if(root == NULL) return;
+	freeTree(root->zero);
+	freeTree(root->one);
+	delete root;
+}
+
+/* Function: buildEncodingMap
+ * Usage: buildEncodingMap(encodingTree, encodingMap, binary);
+ * --------------------------------------------------------
+ * This additional function creates a map which maps characters to
+ * their new binary sequences derived from the optimal binary tree.
+ */ 
+void buildEncodingMap(Node* encodingTree, Map<ext_char, string>& encodingMap, string binary){
+	/* Assume the next character of the binary sequence to be zero. */ 
+	if(encodingTree->zero != NULL){
+		binary = binary + "0";
+		buildEncodingMap(encodingTree->zero, encodingMap, binary);
+		binary = binary.substr(0, binary.length() - 1);
+	}
+	/* Assume the next character of the binary sequence to be one. */
+	if(encodingTree->one != NULL){
+		binary = binary + "1";
+		buildEncodingMap(encodingTree->one, encodingMap, binary);
+		binary = binary.substr(0, binary.length() - 1);
+	}
+	/* If a leaf node is found then add it to the encoding map. */ 
+	if(encodingTree->zero == NULL && encodingTree->one == NULL){
+		encodingMap.put(encodingTree->character, binary);
+	}   
 }
 
 /* Function: encodeFile
@@ -73,7 +127,26 @@ void freeTree(Node* root) {
  *     without seeking the file anywhere.
  */ 
 void encodeFile(istream& infile, Node* encodingTree, obstream& outfile) {
-	// TODO: Implement this!
+	/* Initialise the encoding map. */ 
+	string binary;
+	Map<ext_char, string> encodingMap;
+	buildEncodingMap(encodingTree, encodingMap, binary);
+	/* Encode the source file with new binary representations. */ 
+	char character;
+	while(infile.get(character)){
+		/* Assign regular character value to an extended type. */ 
+		ext_char extendedChar = character;	
+		/* Find the new binary representation and write it into the output file. */ 
+		string binary = encodingMap[extendedChar];
+		for(int i = 0; i < binary.length(); i++){
+			outfile.writeBit(binary[i] - '0');
+		}
+	}
+	/* Add the pseudo-end-of-file binary interpretation at the end 
+	   of the output file. */ 
+	for(int i = 0; i < encodingMap[PSEUDO_EOF].length(); i++){
+		outfile.writeBit(encodingMap[PSEUDO_EOF][i] - '0');
+	}
 }
 
 /* Function: decodeFile
@@ -89,7 +162,31 @@ void encodeFile(istream& infile, Node* encodingTree, obstream& outfile) {
  *   - The output file is open and ready for writing.
  */
 void decodeFile(ibstream& infile, Node* encodingTree, ostream& file) {
-	// TODO: Implement this!
+	/* Assign a new node to the encoding tree root for tracing the leaf node. */ 
+	Node* tracker = encodingTree;
+	/* Initialise extended character type. */ 
+	ext_char leafNodeChar = NULL;
+	/* Declare a variable that will store one binary figure (zero or one). */ 
+	int binary;
+	/* Make sure no whitespace character is skipped during file analysis. */ 
+	noskipws(infile);
+	/* Decode file by tracing the encoding tree for leaf nodes until the leaf 
+	   node is pseudo-end-of-file. */ 
+	while(leafNodeChar != PSEUDO_EOF){
+		binary = infile.readBit();
+		if(binary == 0) tracker = tracker->zero;
+		if(binary == 1) tracker = tracker->one;
+		if(tracker->character == PSEUDO_EOF) break;
+		leafNodeChar = tracker->character;
+		if(tracker->character != NOT_A_CHAR){
+			/* Assign extended type value to a regular character. */ 
+			char character = (char)leafNodeChar;
+			file.put(character);
+			/* After finding a leaf node and adding it to the file, the tracker
+			   goes back to the top (root) node of the encoding tree. */ 
+			tracker = encodingTree;
+		}
+	}
 }
 
 /* Function: writeFileHeader
@@ -199,7 +296,13 @@ Map<ext_char, int> readFileHeader(ibstream& infile) {
  * primarily be glue code.
  */
 void compress(ibstream& infile, obstream& outfile) {
-	// TODO: Implement this!
+	/* The "summary" process of compressing the infile. */ 
+	Map<ext_char, int> frequencies = getFrequencyTable(infile);
+	Node* root = buildEncodingTree(frequencies);
+	writeFileHeader(outfile, frequencies);
+	infile.rewind();
+	encodeFile(infile, root, outfile);
+	freeTree(root);
 }
 
 /* Function: decompress
@@ -215,6 +318,9 @@ void compress(ibstream& infile, obstream& outfile) {
  * primarily be glue code.
  */
 void decompress(ibstream& infile, ostream& outfile) {
-	// TODO: Implement this!
+	/* The "summary" process of decompressing the outfile. */ 
+	Map<ext_char, int> header = readFileHeader(infile);
+	Node* root = buildEncodingTree(header);
+	decodeFile(infile, root, outfile);
+	freeTree(root);
 }
-

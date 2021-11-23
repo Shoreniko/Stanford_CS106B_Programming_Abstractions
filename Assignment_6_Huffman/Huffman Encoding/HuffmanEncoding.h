@@ -1,6 +1,5 @@
 /*******************************************************
  * File: HuffmanEncoding.h
- *
  * Definitions for the functions necessary to build a
  * Huffman encoding system.  Your task in this assignment
  * is to implement all of the functions defined in this
@@ -13,6 +12,8 @@
 #include "HuffmanTypes.h"
 #include "map.h"
 #include "bstream.h"
+#include "pqueue.h"
+#include "foreach.h"
 
 /* Function: getFrequencyTable
  * Usage: Map<ext_char, int> freq = getFrequencyTable(file);
@@ -141,5 +142,13 @@ void compress(ibstream& infile, obstream& outfile);
  * primarily be glue code.
  */
 void decompress(ibstream& infile, ostream& outfile);
+
+/* Function: buildEncodingMap
+ * Usage: buildEncodingMap(encodingTree, encodingMap, binary);
+ * --------------------------------------------------------
+ * This additional function creates a map which maps characters to
+ * their new binary sequences derived from the optimal binary tree.
+ */
+void buildEncodingMap(Node* encodingTree, Map<ext_char, string>& encodingMap, string binary);
 
 #endif
