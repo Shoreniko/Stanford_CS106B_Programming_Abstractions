@@ -888,6 +888,7 @@ template <typename PQueue>
 				queue.enqueue(str);
 			}
 			
+			int i = queue.size();
 			/* Sort the strings so we can check that we have them in the right
 			 * order.
 			 */

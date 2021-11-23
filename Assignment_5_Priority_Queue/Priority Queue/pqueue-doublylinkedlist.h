@@ -41,9 +41,21 @@ public:
 	string dequeueMin();
 
 private:
-	// TODO: Fill this in with the implementation of your doubly-linked list
-	// priority queue.  You can add any fields, types, or methods that you
-	// wish.
+	/* Data structure declaration. */ 
+	struct ListNode {
+		string data;
+		ListNode* next;
+		ListNode* previous;
+		ListNode(string word = "", ListNode* pointer = NULL){
+			data = word;
+			next = pointer;
+			previous = pointer;
+		}
+	};
+	/* Pointer declaration. */ 
+	ListNode* front;
+	/*Function prototype declaration. */
+	void findLexicographicallyFirst(ListNode* &current, string& lexicographicallyFirst, ListNode* &lexicographicallyFirstPointer);
 };
 
 #endif

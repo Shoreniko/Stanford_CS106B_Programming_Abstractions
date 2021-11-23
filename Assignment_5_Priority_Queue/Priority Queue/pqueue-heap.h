@@ -41,12 +41,12 @@ public:
 	string dequeueMin();
 
 private:
-	// TODO: Fill this in with the implementation of your binary heap
-	// priority queue.  You can add any fields, types, or methods that you
-	// wish.
-	//
-	// While you are free to implement this as you see fit, you *must* do
-	// all of your own memory management and should not use the Vector.
+	/* Variable declarations. */ 
+	int arraySize;
+	string* pointer;
+	/* Function prototype declarations. */ 
+	void increaseSize();
+	void swapParentAndChild(string* &pointer, int childIndex, int& bubbleDownIndex);
 };
 
 #endif

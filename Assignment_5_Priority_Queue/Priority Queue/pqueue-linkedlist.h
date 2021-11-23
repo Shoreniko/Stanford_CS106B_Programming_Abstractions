@@ -41,9 +41,17 @@ public:
 	string dequeueMin();
 	
 private:
-	// TODO: Fill this in with the implementation of your sorted linked list
-	// priority queue.  You can add any fields, types, or methods that you
-	// wish.
+	/* Data structure declaration. */ 
+	struct ListNode{
+		string data;
+		ListNode* next;
+		ListNode(string word = "", ListNode* pointer = NULL){
+			data = word;
+			next = pointer;
+		}
+	};
+	/* Pointer declaration. */ 
+	ListNode* front;
 };
 
 #endif
