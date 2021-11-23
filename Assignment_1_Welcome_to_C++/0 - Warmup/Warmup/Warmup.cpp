@@ -1,8 +1,7 @@
 /*
  * File: Warmup.cpp
  * ----------------
- * Name: [TODO: enter name here]
- * Section: [TODO: enter section leader here]
+ * Name: Shorena Janjghava.
  * This program generates a hash code based on user's name.
  * As given, this code has two compiler errors you need to track down 
  * and fix in order to get the program up and running.
@@ -12,6 +11,7 @@
 #include <iostream>
 #include <string>
 #include "console.h"
+#include "simpio.h"
 using namespace std;
 
 /* Constants */
@@ -48,7 +48,7 @@ int main() {
 int hashCode(string str) {
     unsigned hash = HASH_SEED;
     int nchars = str.length();
-    for (i = 0; i < nchars; i++) {
+    for (int i = 0; i < nchars; i++) {
         hash = HASH_MULTIPLIER * hash + str[i];
     }
     return (hash & HASH_MASK);
